@@ -1,0 +1,21 @@
+{
+  "name": "googleapis-node-cli",
+  "version": "1.0.0",
+  "description": "command line tool to consume google apis",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "bin": {
+    "goapis": "./index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^8.3.0",
+    "googleapis": "^91.0.0",
+    "inquirer": "^8.2.0"
+  }
+}
