@@ -1,10 +1,11 @@
-#googleapis-node-cli
+# googleapis-node-cli
 
 This is a command line application written in node.js to consume popular google APIs.
-###Demo
+### Demo
 ![Demo](./demo.gif)
 
-###Usage
+### Usage
+
 make sure you have node & npm installed on your machine.
 ```shell
 # clone the github repository
@@ -22,7 +23,7 @@ npm install -g .
 goapis --help
 ```
 
-###TODOs
+### TODOs
 1. ~~Support for Google Drive API~~
 2. Support for Gmail API
 3. Support for Google people API
