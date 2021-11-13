@@ -135,6 +135,8 @@ dist
 #Intellij Idea
 .idea
 *.iml
+googleapis-node-cli.iml
+*.png
 token.json
 credentials.json
 

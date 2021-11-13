@@ -9,7 +9,7 @@ This is a command line application written in node.js to consume popular google 
 make sure you have node & npm installed on your machine.
 ```shell
 # clone the github repository
-git clone https://github.com/sharief007/googleapis-node-cli
+git clone https://github.com/sharief007/googleapis-node-cli.git
 
 cd googleapis-node-cli
 
