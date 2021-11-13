@@ -6,29 +6,31 @@ const inquirer = require("inquirer")
 const { google } = require("googleapis")
 const commander = require("commander")
 
-const oauth = require("./oauth")
-
-const tokenFile = "token.json"
-const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly'];
+const tokenFile = path.join(process.env.HOMEPATH,".goapis","token.json"),
+    credentialsFile = path.join(process.env.HOMEPATH,".goapis","credentials.json")
+const SCOPES = [
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/drive.appdata',
+    'https://www.googleapis.com/auth/drive.file',
+]
 
 let command = new commander.Command("login")
 command.requiredOption("-f, --file <file>", "credentials file with client-id & client-secret")
 command.action((options)=>login(options["file"]))
-// command.action((options)=>console.log(oauth.getOAuthClient()))
 
 function login(file) {
-    fs.readFile(path.join(file),'utf-8',(err, data) =>{
+    fs.readFile(path.join(file),'utf-8',async (err, data) =>{
         if (err) console.log("Error reading file %s",err)
         else {
             const {client_secret, client_id, redirect_uris} = JSON.parse(data)["installed"]
             let oauth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-            getToken(oauth)
+            getToken(oauth,data)
         }
     })
 }
-function getToken(oauthClient) {
+function getToken(oauthClient, clientCredentials) {
     fs.readFile(tokenFile,'utf-8',async (err,data)=>{
-        if (err) await getTokenFromWeb(oauthClient)
+        if (err) await getTokenFromWeb(oauthClient,clientCredentials)
         else {
             let promptOptions = {
                 type: 'list',
@@ -37,21 +39,32 @@ function getToken(oauthClient) {
                 choices: ['Yes','No']
             }
             let answer = await inquirer.prompt([promptOptions])
-            answer['reLogin'] === "Yes" ? await getTokenFromWeb(oauthClient) : oauthClient.setCredentials(JSON.parse(data))
+            answer['reLogin'] === "Yes" ? await getTokenFromWeb(oauthClient,clientCredentials) : oauthClient.setCredentials(JSON.parse(data))
         }
     })
 }
-async function getTokenFromWeb(oauthClient) {
+async function getTokenFromWeb(oauthClient, clientCredentials) {
     const authUrl = oauthClient.generateAuthUrl({ access_type: 'offline', scope: SCOPES })
     console.log("Open this URL to login :", chalk.underline.blue(authUrl))
     let answer = await inquirer.prompt([{name: 'code', message: 'Enter your code :'}])
     oauthClient.getToken(answer['code'],(err,token)=>{
         if (err) return console.error('Error retrieving access token', chalk.red(err.toString()))
         oauthClient.setCredentials(token);
-        fs.writeFile(tokenFile, JSON.stringify(token), (err) => {
-            if (err) return console.error(err);
-            console.log(chalk.green("Login Successful"));
-        });
+        saveToken(token,clientCredentials)
+    });
+}
+
+function saveToken(token,credentials) {
+    let p = path.join(process.env.HOMEPATH,".goapis")
+    if (!fs.existsSync(p)){
+        fs.mkdirSync(p,{recursive:true})
+    }
+    fs.writeFile(tokenFile, JSON.stringify(token), (err) => {
+        if (err) return console.error("Error writing token to file", chalk.red(err.toString()));
+        fs.writeFile(credentialsFile,credentials,err=>{
+          if (err) return console.error("Error writing token to file", chalk.red(err.toString()))
+            console.log(chalk.green("Login Successful."))
+        })
     });
 }
 

@@ -10,7 +10,7 @@ const format = new commander.Option("-f, --format <format>","Response format")
                     .choices(["table","json","text"])
                     .default("text","text")
 const paramsList = [
-    "id","name","mimeType","createdTime","size","webContentLink","appProperties","capabilities","contentHints",
+    "id","name","mimeType","createdTime","size","webContentLink","webViewLink","appProperties","capabilities","contentHints",
     "contentRestrictions","copyRequiresWriterPermission","description","driveId","explicitlyTrashed","exportLinks",
     "fileExtension","folderColorRgb","fullFileExtension","hasAugmentedPermissions","hasThumbnail","headRevisionId",
     "iconLink","imageMediaMetadata","isAppAuthorized","kind","lastModifyingUser","md5Checksum","modifiedByMe",
@@ -27,7 +27,7 @@ list.addOption(params)
 
 list.action((options)=>{
     let oauthClient = oauth.getOAuthClient();
-    let gDrive = new google.drive_v3.Drive({ auth: oauthClient })
+    let drive = new google.drive_v3.Drive({ auth: oauthClient })
 
     let listOptions = {}
 
@@ -44,20 +44,25 @@ list.action((options)=>{
         listOptions["fields"] = `nextPageToken, files(${str})`
     }
 
-    gDrive.files.list(listOptions,(err,res)=>{
+    drive.files.list(listOptions,(err,res)=>{
         if (err) return console.error("API return an error", chalk.red(err.toString()))
-        switch (options["format"]) {
-            case "table": console.table(res.data.files)
-                            break;
-            case "json": console.log(res.data.files)
-                            break;
-            default: res.data.files.forEach((file,index)=>{
-                process.stdout.write(`${chalk.yellow(index)} `,'utf-8')
-                for (let prop in file) {
-                    process.stdout.write(`${chalk.bold(prop)} : ${chalk.green(file[prop].toString())} `)
-                }
-                process.stdout.write('\n','utf-8')
-            })
+        let filesList = res.data.files
+        if (filesList.length) {
+            switch (options["format"]) {
+                case "table": console.table(filesList)
+                    break;
+                case "json": console.log(filesList)
+                    break;
+                default: filesList.forEach((file,index)=>{
+                    process.stdout.write(`${chalk.yellow(index)} `,'utf-8')
+                    Object.keys(file).forEach(prop=> {
+                        process.stdout.write(`${chalk.bold(prop)} : ${chalk.green(file[prop].toString())} `)
+                    })
+                    process.stdout.write('\n','utf-8')
+                })
+            }
+        } else {
+            console.log("No files found")
         }
     })
 })

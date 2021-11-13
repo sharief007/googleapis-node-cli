@@ -134,6 +134,7 @@ dist
 
 #Intellij Idea
 .idea
+*.iml
 token.json
 credentials.json
 
