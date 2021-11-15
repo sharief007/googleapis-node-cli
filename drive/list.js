@@ -1,7 +1,11 @@
+const fs = require("fs")
+const path = require("path")
 const commander = require("commander")
 const google = require("googleapis")
 const chalk = require("chalk")
 const oauth = require("../auth/oauth")
+
+const pageTokenFile = path.join(process.env.HOMEPATH,".goapis","pageToken.txt")
 
 const list = new commander.Command("list")
 
@@ -21,9 +25,12 @@ const paramsList = [
 ]
 const params = new commander.Option("-p, --params <params...>", "List of parameters").choices(paramsList)
 
+const nextPage = new commander.Option("-n,--next","Next page")
+
 list.addOption(limit)
 list.addOption(format)
 list.addOption(params)
+list.addOption(nextPage)
 
 list.action((options)=>{
     let oauthClient = oauth.getOAuthClient();
@@ -43,6 +50,12 @@ list.action((options)=>{
         str=str.substr(1,str.length-1)
         listOptions["fields"] = `nextPageToken, files(${str})`
     }
+   if (options["next"] && fs.existsSync(pageTokenFile)) {
+       let pageToken = fs.readFileSync(pageTokenFile,'utf-8')
+       if (pageToken) {
+           listOptions["pageToken"] = pageToken
+       }
+   }
 
     drive.files.list(listOptions,(err,res)=>{
         if (err) return console.error("API return an error", chalk.red(err.toString()))
@@ -61,6 +74,7 @@ list.action((options)=>{
                     process.stdout.write('\n','utf-8')
                 })
             }
+            fs.createWriteStream(pageTokenFile).write(res.data.nextPageToken,'utf-8')
         } else {
             console.log("No files found")
         }
