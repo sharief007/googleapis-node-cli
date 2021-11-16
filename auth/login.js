@@ -7,7 +7,7 @@ const { google } = require("googleapis")
 const commander = require("commander")
 
 const props = require("../props/properties")
-const tokenFile = path.join(process.env.HOMEPATH,".goapis","token.json")
+const tokenFile = path.join(props.storagePath,"token.json")
 
 let command = new commander.Command("login")
 command.action(()=>{
@@ -44,9 +44,8 @@ async function getTokenFromWeb(oauthClient) {
 }
 
 function saveToken(token) {
-    let p = path.join(process.env.HOMEPATH,".goapis")
-    if (!fs.existsSync(p)){
-        fs.mkdirSync(p,{recursive:true})
+    if (!fs.existsSync(props.storagePath)){
+        fs.mkdirSync(props.storagePath,{recursive:true})
     }
     fs.writeFile(tokenFile, JSON.stringify(token), (err) => {
         if (err) return console.error("Error writing token to file", chalk.red(err.toString()));

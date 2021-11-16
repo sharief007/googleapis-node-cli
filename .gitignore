@@ -140,4 +140,8 @@ googleapis-node-cli.iml
 token.json
 credentials.json
 
+*.exe
+*.so
+*.out
+
 # End of https://www.toptal.com/developers/gitignore/api/node

@@ -1,13 +1,11 @@
 const commander = require("commander")
 const chalk = require("chalk")
-
 const fs = require("fs")
-const path = require("path")
+const props = require("../props/properties")
 
 let command = new commander.Command("logout")
 command.action(()=>{
-    let p = path.join(process.env.HOMEPATH,".goapis")
-    fs.rmdirSync(p,{recursive:true})
+    fs.rmdirSync(props.storagePath,{recursive:true})
     console.log(`Logging off. ${chalk.yellow("Bye")}!`)
 })
 

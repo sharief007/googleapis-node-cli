@@ -5,7 +5,9 @@ const google = require("googleapis")
 const chalk = require("chalk")
 const oauth = require("../auth/oauth")
 
-const pageTokenFile = path.join(process.env.HOMEPATH,".goapis","pageToken.txt")
+const props = require("../props/properties")
+
+const pageTokenFile = path.join(props.storagePath,"pageToken.txt")
 
 const list = new commander.Command("list")
 
@@ -36,7 +38,9 @@ list.action((options)=>{
     let oauthClient = oauth.getOAuthClient();
     let drive = new google.drive_v3.Drive({ auth: oauthClient })
 
-    let listOptions = {}
+    let listOptions = {
+	fields: "nextPageToken, files(id,name,mimeType)"
+    }
 
     if (options["limit"]) {
         listOptions["pageSize"] = parseInt(options["limit"],10)
@@ -64,17 +68,20 @@ list.action((options)=>{
             switch (options["format"]) {
                 case "table": console.table(filesList)
                     break;
-                case "json": console.log(filesList)
+                case "json": console.log(JSON.stringify(filesList,null,1))
                     break;
                 default: filesList.forEach((file,index)=>{
                     process.stdout.write(`${chalk.yellow(index)} `,'utf-8')
                     Object.keys(file).forEach(prop=> {
-                        process.stdout.write(`${chalk.bold(prop)} : ${chalk.green(file[prop].toString())} `)
+                        process.stdout.write(`${chalk.bold(prop)} : ${chalk.green(file[prop])} `)
                     })
                     process.stdout.write('\n','utf-8')
                 })
             }
-            fs.createWriteStream(pageTokenFile).write(res.data.nextPageToken,'utf-8')
+            if(res.data.nextPageToken) {
+		        fs.createWriteStream(pageTokenFile)
+                    .write(Buffer.from(res.data.nextPageToken,'utf-8'),'utf-8')
+	        }
         } else {
             console.log("No files found")
         }

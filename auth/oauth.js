@@ -5,7 +5,7 @@ const chalk = require("chalk")
 const { google } = require("googleapis")
 const props = require("../props/properties")
 
-const tokenFile = path.join(process.env.HOMEPATH,".goapis","token.json")
+const tokenFile = path.join(props.storagePath,"token.json")
 
 module.exports = {
     getOAuthClient() {
